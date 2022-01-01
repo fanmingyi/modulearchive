@@ -7,16 +7,16 @@ plugins {
 }
 
 
-val artifactId="modulearchive"
+val artifactId="ModuleArchive"
 val groupName = "org.fmy.modulearchive"
 val artifactVersion = "1.0-SNAPSHOT"
 group = groupName
 version = artifactVersion
 
 pluginBundle {
-    website = "<substitute your project website>"
-    vcsUrl = "<uri to project source repository>"
-    tags = listOf("tags", "for", "your", "plugins")
+    website = "https://github.com/fanmingyi/modulearchive"
+    vcsUrl = "https://github.com/fanmingyi/modulearchive"
+    tags = listOf("Android", "aar", "compile", "fast")
 }
 
 repositories {
@@ -26,7 +26,9 @@ repositories {
 gradlePlugin {
     plugins {
         create(artifactId) {
-            id = project.group as String
+            id = artifactId
+            displayName = artifactId
+            description = "Improve the efficiency of compiling Android.Package module as AAR and cache it."
             implementationClass = "org.modulearchive.plugin.ModuleArchivePlugin"
         }
     }
