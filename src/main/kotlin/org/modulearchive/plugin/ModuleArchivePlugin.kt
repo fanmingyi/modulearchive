@@ -78,7 +78,12 @@ public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
         }
         //是否开启日志
         project.afterEvaluate {
-            println("是否启用${moduleArchiveExtension.logEnable}")
+
+            //沒有啓用直接返回
+            if (!moduleArchiveExtension.enable){
+                return@afterEvaluate
+            }
+
             ModuleArchiveLogger.enableLogging = moduleArchiveExtension.logEnable
             moduleArchiveTask.get().aarOutDir(moduleArchiveExtension.getStoreLibsDir().get())
             dependencyReplaceHelper.replaceDependency()

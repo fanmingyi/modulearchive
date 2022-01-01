@@ -25,7 +25,7 @@ abstract class ModuleArchiveExtension {
     /**
      * 是否启用插件
      */
-    abstract fun getEnabled(): Property<Boolean>
+    var enable: Boolean = false
 
     /**
      * 是否打印日志

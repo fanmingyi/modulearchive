@@ -9,7 +9,7 @@ plugins {
 
 val artifactId="ModuleArchive"
 val groupName = "org.fmy.modulearchive"
-val artifactVersion = "1.0-SNAPSHOT"
+val artifactVersion = "1.1.1-SNAPSHOT"
 group = groupName
 version = artifactVersion
 
@@ -26,7 +26,7 @@ repositories {
 gradlePlugin {
     plugins {
         create(artifactId) {
-            id = artifactId
+            id = groupName
             displayName = artifactId
             description = "Improve the efficiency of compiling Android.Package module as AAR and cache it."
             implementationClass = "org.modulearchive.plugin.ModuleArchivePlugin"
