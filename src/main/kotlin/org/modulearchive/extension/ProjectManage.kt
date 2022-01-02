@@ -31,7 +31,7 @@ open class ProjectManage constructor(val name: String) {
     /**
      * 配置aar
      */
-    var aarName: String = "_${name}.aar"
+    var aarName: String = "_${name.replace(":","")}.aar"
 
     /**
      * 风味组合名 如AAXX
@@ -39,8 +39,9 @@ open class ProjectManage constructor(val name: String) {
     var flavorName: String = ""
 
 
-//    var filesChangeListener: FileTree? = null
+    init {
 
+    }
 
 
 }

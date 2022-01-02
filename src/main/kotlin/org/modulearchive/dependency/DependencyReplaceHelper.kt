@@ -34,29 +34,48 @@ class DependencyReplaceHelper constructor(
 
         //替换依赖
         replaceDependency(infoCenter.getTargetProject())
-        //使用aar依赖不会打包到apk所以这里需要进一步的处理
-//        addDependencyToTarget()
 
     }
 
-    /**
-     * 添加依赖到启动模块，防止没有打包进apk的情况
-     */
-    private fun addDependencyToTarget(manager: ProjectManageWrapper) {
-        val implementation = infoCenter.getTargetProject().configurations.getByName("implementation")
-        val api = infoCenter.getTargetProject().configurations.getByName("api")
-        implementation.dependencies.add(manager.obtainAARDependency())
-        api.dependencies.add(manager.obtainAARDependency())
-    }
 
-    private fun replaceDependency(replaceProject: Project) {
-        replaceProject.configurations.all { configuration ->
-            configuration.dependencies.all { dependency ->
+
+    private fun replaceDependency(replaceProject: Project, parent: Project? = null) {
+
+        val managerList = infoCenter.getManagerList()
+        val replaceProjectManager = managerList.firstOrNull { it.originData.name == replaceProject.path }
+
+
+        //子工程依赖替换完成
+        for (configuration in replaceProject.configurations) {
+            val mutableSet = mutableSetOf<Dependency>()
+            mutableSet.addAll(configuration.dependencies)
+            for (dependency in mutableSet) {
                 handleReplaceDependency(configuration, dependency, replaceProject)
             }
+
         }
 
+        //把下层的依赖投递到上层
+        if (parent != null && replaceProjectManager != null) {
+            val impl = replaceProject.configurations.getByName("implementation")
+            val implParent = parent.configurations.getByName("implementation")
+            copyDependency(impl,implParent)
 
+
+            val api = replaceProject.configurations.getByName("api")
+            val apiParent = parent.configurations.getByName("api")
+            copyDependency(api,apiParent)
+
+            val runtimeOnly = replaceProject.configurations.getByName("runtimeOnly")
+            val runtimeOnlyParent = parent.configurations.getByName("runtimeOnly")
+            copyDependency(runtimeOnly,runtimeOnlyParent)
+        }
+    }
+
+    private fun copyDependency(src: Configuration, dest: Configuration) {
+        for (dependency in src.dependencies) {
+            dest.dependencies.add(dependency)
+        }
     }
 
 
@@ -104,6 +123,7 @@ class DependencyReplaceHelper constructor(
                 replaceProject.repositories.flatDir { flatDirectoryArtifactRepository ->
                     flatDirectoryArtifactRepository.dir(moduleArchiveExtension.storeLibsDir)
                 }
+                //https://issuetracker.google.com/issues/165821826
                 //移除原始的project依赖
                 configuration.dependencies.remove(dependency)
                 //添加aar依赖
@@ -126,6 +146,6 @@ class DependencyReplaceHelper constructor(
         }
 
         //替换自工程的依赖
-        replaceDependency(dependencyProject)
+        replaceDependency(dependencyProject, replaceProject)
     }
 }

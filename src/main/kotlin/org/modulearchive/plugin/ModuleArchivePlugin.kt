@@ -73,10 +73,10 @@ public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
             propertyInfoHelper.writeFile()
         }
         //是否开启日志
-        project.afterEvaluate {
+        project.gradle.projectsEvaluated {
             //沒有啓用直接返回
             if (!moduleArchiveExtension.pluginEnable) {
-                return@afterEvaluate
+                return@projectsEvaluated
             }
             //赋值日志是否启用
             ModuleArchiveLogger.enableLogging = moduleArchiveExtension.logEnable
@@ -97,7 +97,7 @@ public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
             }
             if (launcher.isNullOrBlank()) {
                 ModuleArchiveLogger.logLifecycle("检测任务不相关不启用替换逻辑")
-                return@afterEvaluate
+                return@projectsEvaluated
             }
 
 
