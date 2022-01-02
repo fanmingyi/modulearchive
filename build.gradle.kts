@@ -9,7 +9,7 @@ plugins {
 
 val artifactId="ModuleArchive"
 val groupName = "org.fmy.modulearchive"
-val artifactVersion = "1.0.0-SNAPSHOT"
+val artifactVersion = "1.0.0"
 group = groupName
 version = artifactVersion
 
