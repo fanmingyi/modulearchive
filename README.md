@@ -13,31 +13,31 @@
 # 使用指南
 在您的app的build.gradle添加如下配置
 ```groovy
-;启用插件
+//启用插件
 apply plugin: org.modulearchive.plugin.ModuleArchivePlugin
-;插件配置
+//插件配置
 moduleArchive {
-    ;可选参数.是否打印log 默认为false
+    //可选参数.是否打印log 默认为false
     logEnable = true
-    ;可选参数.是否启用插件 默认为false
+    //可选参数.是否启用插件 默认为false
     pluginEnable = true
-    ;必选参数.存储插件临时配置目录
+    //必选参数.存储插件临时配置目录
     storeLibsDir = project.rootProject.file("libs")
-    ;下面配置哪些模块可以被编译成aar缓存
+    //下面配置哪些模块可以被编译成aar缓存
     subModuleConfig {
-        ;image-picker是一个aar模块，那么他会自动在构建后缓存
-        ;从而提高效率，在您修改这个模块后会自动进行构建
+        //image-picker是一个aar模块，那么他会自动在构建后缓存
+        //从而提高效率，在您修改这个模块后会自动进行构建
         register(":image-picker") {
-            ;可选参数.是否使用debug版本
+            //可选参数.是否使用debug版本
             useDebug = true
-            ;可选参数.是否启用这个模块配置 
+            //可选参数.是否启用这个模块配置 
             enable = true
-            ;可选参数. 缓存的aar命中
+            //可选参数. 缓存的aar命中
             aarName = "image-picker-debug.aar"
-            ;可选参数.构建变体 如没有可不写
+            //可选参数.构建变体 如没有可不写
             flavorName = "tiya"
         }
-        ;另一个aar模块，其最简约配置
+        //另一个aar模块，其最简约配置
         register(":floatwindow") {
       
         }
