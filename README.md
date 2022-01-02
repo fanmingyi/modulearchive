@@ -9,7 +9,8 @@
 如果你改动了子module本插件通用会自动感知进行编译再次进行缓存。
 
 在[TIYA](https://play.google.com/store/apps/details?id=com.huanliao.tiya&hl=en_US&gl=US)项目中增量构建效益对比图
-![1641143695(1)](https://user-images.githubusercontent.com/22413240/147883749-3f2e2c15-66bf-4ca7-9e67-8cbb565de731.png)
+
+![image](https://user-images.githubusercontent.com/22413240/147884048-9ef0582f-1e1e-4180-bfb6-a8d773a20a8b.png)
 
 
 # 使用指南
