@@ -8,6 +8,8 @@
 本插件会自动缓存编译后的子模块生产物(xxx.aar)，且会自动替换依赖为aar依赖。
 如果你改动了子module本插件通用会自动感知进行编译再次进行缓存。
 
+在[Tiya](https://play.google.com/store/apps/details?id=com.huanliao.tiya&hl=en_US&gl=US)项目中增量构建效益对比图
+![1641143695(1)](https://user-images.githubusercontent.com/22413240/147883749-3f2e2c15-66bf-4ca7-9e67-8cbb565de731.png)
 
 
 # 使用指南
@@ -47,3 +49,11 @@ moduleArchive {
     }
 }
 ```
+
+# 谁在使用
+
+| TIYA        | 
+| --------   | 
+|![tiyaICON(1)](https://play-lh.googleusercontent.com/RwuBOgoBX1OmmR5W14AyBDp9pNgnh1eJD2UmJzhVSZOpZYG1xI_y1aihbE4aP3dURwc=s360-rw)        |
+
+
