@@ -17,11 +17,12 @@
 package org.modulearchive.task
 
 import org.gradle.api.DefaultTask
+import org.gradle.api.Task
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.tasks.*
 import org.gradle.api.tasks.bundling.Zip
 import org.modulearchive.IInfoCenter
-import org.modulearchive.extension.ProjectManage
+import org.modulearchive.extension.ProjectManageWrapper
 import org.modulearchive.log.ModuleArchiveLogger
 import java.io.File
 
@@ -35,7 +36,7 @@ public abstract class ModuleArchiveTask : DefaultTask() {
     var outPutDirFile = File(".")
 
     @Internal
-    var reNameMap = HashMap<String, ProjectManage>()
+    var reNameMap = HashMap<String, ProjectManageWrapper>()
 
     @Internal
     var infoCenter: IInfoCenter? = null
@@ -49,9 +50,9 @@ public abstract class ModuleArchiveTask : DefaultTask() {
                 val projectManage = reNameMap[name]
 
                 if (projectManage != null) {
-                    ModuleArchiveLogger.logLifecycle("Copy aar  from ${name} to ${projectManage.aarName}.")
+                    ModuleArchiveLogger.logLifecycle("Copy aar  from $name to ${projectManage.originData.aarName}.")
                     infoCenter?.getPropertyInfoHelper()?.upProjectManager(projectManage)
-                    return@rename projectManage.aarName
+                    return@rename projectManage.originData.aarName
                 }
                 name
             }
@@ -61,11 +62,17 @@ public abstract class ModuleArchiveTask : DefaultTask() {
     }
 
 
-    fun aarInput(taskProvider: TaskProvider<Zip>, projectManage: ProjectManage) {
+    fun aarInput(
+        taskProvider: TaskProvider<Zip>,
+        projectManage: ProjectManageWrapper,
+        packageLibraryProvider: TaskProvider<Task>
+    ) {
         getInputAARList().from(taskProvider)
-        val get = taskProvider.get()
-        project.fileTree("")
-        val archiveFileName = get.archiveFileName.get()
+        //不知道为什么有时候单纯依靠上面的输入输出关联有时候无法成功触发编译aar
+        //因此加入下面的代码
+        dependsOn(packageLibraryProvider)
+        val zip = taskProvider.get()
+        val archiveFileName = zip.archiveFileName.get()
         reNameMap[archiveFileName] = projectManage
     }
 

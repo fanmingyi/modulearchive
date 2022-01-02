@@ -1,5 +1,5 @@
 plugins {
-    kotlin("jvm") version "1.6.10"
+    kotlin("jvm") version "1.3.61"
     java
     `java-gradle-plugin`
     id("maven-publish")
@@ -9,7 +9,7 @@ plugins {
 
 val artifactId="ModuleArchive"
 val groupName = "org.fmy.modulearchive"
-val artifactVersion = "1.1.1-SNAPSHOT"
+val artifactVersion = "1.5.15-SNAPSHOT"
 group = groupName
 version = artifactVersion
 
@@ -35,11 +35,10 @@ gradlePlugin {
 }
 dependencies {
     implementation(kotlin("stdlib"))
-    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+//    testImplementation("org.junit.jupiter:junit-jupiter-api:5.6.0")
+//    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
 
-
-    implementation("com.android.tools.build:gradle:7.2.0-alpha06")
+    implementation("com.android.tools.build:gradle:3.6.0")
 }
 
 tasks.getByName<Test>("test") {

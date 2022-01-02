@@ -16,29 +16,20 @@
 
 package org.modulearchive.plugin
 
-import com.android.build.gradle.LibraryExtension
-import com.android.build.gradle.LibraryPlugin
-import com.android.build.gradle.api.BaseVariantOutput
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-import org.gradle.api.artifacts.ProjectDependency
-import org.gradle.api.file.ConfigurableFileCollection
-import org.gradle.api.file.FileTree
-import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.TaskProvider
-import org.gradle.work.Incremental
-import org.gradle.work.InputChanges
 import org.modulearchive.IInfoCenter
 import org.modulearchive.config.PropertyInfoHelper
+import org.modulearchive.dependency.CacheGraphCalcHelper
 import org.modulearchive.dependency.DependencyReplaceHelper
 import org.modulearchive.extension.ModuleArchiveExtension
-import org.modulearchive.extension.ProjectManageHelper
+import org.modulearchive.extension.ProjectManageWrapper
 import org.modulearchive.log.ModuleArchiveLogger
-import org.modulearchive.task.ModuleArchiveAARGraphHelper
 import org.modulearchive.task.ModuleArchiveTask
 import java.io.FileReader
-import java.io.Reader
 import java.util.*
+import java.util.regex.Matcher
 
 
 public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
@@ -49,6 +40,8 @@ public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
     private lateinit var dependencyReplaceHelper: DependencyReplaceHelper
     private lateinit var propertyInfoHelper: PropertyInfoHelper
 
+    private var projectManageWrapperList: List<ProjectManageWrapper> = emptyList()
+
     override fun apply(project: Project) {
         this.project = project
 
@@ -56,7 +49,8 @@ public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
         //构造配置
         this.moduleArchiveExtension = project.extensions.create<ModuleArchiveExtension>(
             "moduleArchive",
-            ModuleArchiveExtension::class.java
+            ModuleArchiveExtension::class.java,
+            project
         )
 
         val moduleArchiveTask: TaskProvider<ModuleArchiveTask> =
@@ -66,34 +60,60 @@ public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
             )
 
         this.moduleArchiveTask = moduleArchiveTask.get()
-
+        project.tasks.getByName("preBuild").doLast {
+            println()
+        }
         project.tasks.getByName("preBuild").dependsOn(moduleArchiveTask)
 
         dependencyReplaceHelper =
             DependencyReplaceHelper(this)
         propertyInfoHelper = PropertyInfoHelper(this)
-        moduleArchiveTask.get().infoCenter=this
+        moduleArchiveTask.get().infoCenter = this
         moduleArchiveTask.get().doLast {
             propertyInfoHelper.writeFile()
         }
         //是否开启日志
         project.afterEvaluate {
-
             //沒有啓用直接返回
-            if (!moduleArchiveExtension.enable){
+            if (!moduleArchiveExtension.pluginEnable) {
+                return@afterEvaluate
+            }
+            //赋值日志是否启用
+            ModuleArchiveLogger.enableLogging = moduleArchiveExtension.logEnable
+
+            for (childProject in project.rootProject.childProjects) {
+                childProject.value.repositories.flatDir { flatDirectoryArtifactRepository ->
+                    flatDirectoryArtifactRepository.dir(moduleArchiveExtension.storeLibsDir)
+                }
+            }
+
+            val launcher = project.gradle.startParameter.taskNames.firstOrNull { taskName ->
+                if (moduleArchiveExtension.detectLauncherRegex.isNullOrBlank()) {
+                    taskName.contains(project.name)
+                } else {
+                    taskName.contains(moduleArchiveExtension.detectLauncherRegex)
+                }
+
+            }
+            if (launcher.isNullOrBlank()) {
+                ModuleArchiveLogger.logLifecycle("检测任务不相关不启用替换逻辑")
                 return@afterEvaluate
             }
 
-            ModuleArchiveLogger.enableLogging = moduleArchiveExtension.logEnable
-            moduleArchiveTask.get().aarOutDir(moduleArchiveExtension.getStoreLibsDir().get())
+
+            //转化对象并计算出缓存是否有效
+            projectManageWrapperList = CacheGraphCalcHelper.calcCacheValid(this).toMutableList()
+
+
+            //设置task输出目录
+            moduleArchiveTask.get().aarOutDir(moduleArchiveExtension.storeLibsDir)
+
             dependencyReplaceHelper.replaceDependency()
-//            ModuleArchiveAARGraphHelper.buildGraph(this)
-//
-//            ProjectManageHelper.obtainAARDirInspection(
-//                this,
-//                moduleArchiveExtension.getProjectConfig().single()
-//            )
+
         }
+
+
+
     }
 
 
@@ -129,5 +149,9 @@ public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
     override fun getPropertyInfoHelper(): PropertyInfoHelper {
         return propertyInfoHelper
 
+    }
+
+    override fun getManagerList(): List<ProjectManageWrapper> {
+        return projectManageWrapperList
     }
 }

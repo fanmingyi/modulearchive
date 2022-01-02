@@ -16,33 +16,49 @@
 
 package org.modulearchive.extension
 
+import org.gradle.api.Action
 import org.gradle.api.NamedDomainObjectContainer
+import org.gradle.api.Project
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Optional
 import java.io.File
 
-abstract class ModuleArchiveExtension {
+open class ModuleArchiveExtension {
     /**
      * 是否启用插件
      */
-    var enable: Boolean = false
+    var pluginEnable: Boolean = false
 
     /**
      * 是否打印日志
      */
     var logEnable: Boolean = false
 
+    /***
+     * 如果当前的task任务名称满足就启动依赖替换
+     */
+    var detectLauncherRegex: String = ""
+
 
     /**
      * 得到存储lib的目录
      */
-    abstract fun getStoreLibsDir(): Property<File>
-
+    var storeLibsDir: File = File("")
 
     /**
      * 管理子module
      */
-    abstract fun getProjectConfig(): NamedDomainObjectContainer<ProjectManage>
 
+    var projectConfig: NamedDomainObjectContainer<ProjectManage>
+
+    constructor(project: Project) {
+        projectConfig = project.container(ProjectManage::class.java)
+    }
+
+
+    fun subModuleConfig(action: Action<NamedDomainObjectContainer<ProjectManage>>) {
+        action.execute(projectConfig)
+    }
 
 }

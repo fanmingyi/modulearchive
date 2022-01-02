@@ -26,7 +26,7 @@ object ModuleArchiveLogger {
 
     fun logLifecycle(message: String) {
         if (enableLogging) {
-            logger.log(LogLevel.LIFECYCLE, message)
+            logger.log(LogLevel.LIFECYCLE,"ModuleArchive:"+ message)
         }
     }
 }

@@ -20,6 +20,7 @@ import org.gradle.api.Project
 import org.modulearchive.config.PropertyInfoHelper
 import org.modulearchive.dependency.DependencyReplaceHelper
 import org.modulearchive.extension.ModuleArchiveExtension
+import org.modulearchive.extension.ProjectManageWrapper
 import org.modulearchive.plugin.ModuleArchivePlugin
 import org.modulearchive.task.ModuleArchiveTask
 
@@ -31,4 +32,5 @@ interface IInfoCenter {
     fun getModuleArchiveTask(): ModuleArchiveTask
     fun getTargetProject(): Project
     fun getPropertyInfoHelper(): PropertyInfoHelper
+    fun getManagerList(): List<ProjectManageWrapper>
 }

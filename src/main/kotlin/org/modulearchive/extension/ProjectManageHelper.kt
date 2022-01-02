@@ -19,29 +19,19 @@ package org.modulearchive.extension
 import com.android.build.gradle.LibraryExtension
 import org.modulearchive.IInfoCenter
 import org.modulearchive.log.ModuleArchiveLogger
-import java.io.File
 
 object ProjectManageHelper {
 
-    /**
-     * 获取缓存aar文件路径
-     */
-    fun obtainProjectAARFile(infoCenter: IInfoCenter, projectManage: ProjectManage): File {
-        val moduleArchiveExtension = infoCenter.getModuleArchiveExtension()
-        val file = File(
-            moduleArchiveExtension.getStoreLibsDir().get(),
-            projectManage.aarName
-        )
-        return file
-    }
 
     /**
      * 让当前aar工程参与构建
      */
-    fun buildAARGraph(infoCenter: IInfoCenter, projectManage: ProjectManage) {
-        val aarProject = projectManage.obtainProject(infoCenter.getTargetProject())
-        aarProject.state
+    fun buildAARGraph(infoCenter: IInfoCenter, projectManage: ProjectManageWrapper) {
 
+        val aarProject = projectManage.obtainProject()
+//        aarProject.afterEvaluate {
+//            println()
+//        }
         aarProject.plugins.all { plugin ->
             //是AndroidLib 插件
             if (plugin is com.android.build.gradle.LibraryPlugin) {
@@ -50,18 +40,24 @@ object ProjectManageHelper {
                 extension.libraryVariants.all { variant ->
 
                     //构建体必须相同
-                    if (projectManage.useDebug == variant.buildType.isDebuggable && variant.flavorName == projectManage.flavorName) {
+                    if (projectManage.originData.useDebug == variant.buildType.isDebuggable && variant.flavorName == projectManage.originData.flavorName) {
                         val packageLibraryProvider = variant.packageLibraryProvider
+
                         //链接构建无环图
                         infoCenter.getModuleArchiveTask()
-                            .aarInput(packageLibraryProvider, projectManage)
-                        ModuleArchiveLogger.logLifecycle("${projectManage.name}: ${projectManage.flavorName} aar join build")
+                            .aarInput(packageLibraryProvider, projectManage,variant.assembleProvider)
+
+                        ModuleArchiveLogger.logLifecycle("${projectManage.obtainName()}:  aar join build")
                         return@all
                     }
                 }
             }
         }
+
     }
+
+    /**
+     *
 
     /**
      * 让当前aar工程参与构建
@@ -153,24 +149,6 @@ object ProjectManageHelper {
             }
         }
     }
-
-    /**
-     * 让当前aar工程参与构建
      */
-    fun curAARProLastModified(
-        infoCenter: IInfoCenter,
-        projectManage: ProjectManage,
-    ): Long {
-        val aarProject = projectManage.obtainProject(infoCenter.getTargetProject())
-
-        val file = aarProject.fileTree(".").matching { patterns ->
-            patterns.exclude("build", ".gradle")
-        }.toList().maxByOrNull {
-            it.lastModified()
-        }
-
-
-        return file?.lastModified() ?: 0
-    }
 
 }

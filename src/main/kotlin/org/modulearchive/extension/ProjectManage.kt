@@ -16,9 +16,6 @@
 
 package org.modulearchive.extension
 
-import org.gradle.api.Project
-import org.gradle.api.file.FileTree
-
 open class ProjectManage constructor(val name: String) {
 
     /**
@@ -42,11 +39,8 @@ open class ProjectManage constructor(val name: String) {
     var flavorName: String = ""
 
 
-    var filesChangeListener: FileTree? = null
+//    var filesChangeListener: FileTree? = null
 
 
-    fun obtainProject(project: Project): Project {
-        return project.project("$name")
-    }
 
 }

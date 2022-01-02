@@ -21,24 +21,36 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ProjectDependency
 import org.modulearchive.IInfoCenter
-import org.modulearchive.config.PropertyInfoHelper
 import org.modulearchive.extension.ProjectManageHelper
-import org.modulearchive.extension.ProjectManageHelper.buildAARGraph
+import org.modulearchive.extension.ProjectManageWrapper
 import org.modulearchive.log.ModuleArchiveLogger
 
 
 class DependencyReplaceHelper constructor(
-    val infoCenter: IInfoCenter,
+    private val infoCenter: IInfoCenter
 ) {
 
     fun replaceDependency() {
+
+        //替换依赖
         replaceDependency(infoCenter.getTargetProject())
+        //使用aar依赖不会打包到apk所以这里需要进一步的处理
+//        addDependencyToTarget()
+
+    }
+
+    /**
+     * 添加依赖到启动模块，防止没有打包进apk的情况
+     */
+    private fun addDependencyToTarget(manager: ProjectManageWrapper) {
+        val implementation = infoCenter.getTargetProject().configurations.getByName("implementation")
+        val api = infoCenter.getTargetProject().configurations.getByName("api")
+        implementation.dependencies.add(manager.obtainAARDependency())
+        api.dependencies.add(manager.obtainAARDependency())
     }
 
     private fun replaceDependency(replaceProject: Project) {
-//        println("开始处理依赖替换 ${replaceProject.name}")
         replaceProject.configurations.all { configuration ->
-//            println("开始处理依赖替换 ${replaceProject.name} ${configuration.name}")
             configuration.dependencies.all { dependency ->
                 handleReplaceDependency(configuration, dependency, replaceProject)
             }
@@ -55,47 +67,65 @@ class DependencyReplaceHelper constructor(
     ) {
         val moduleArchiveExtension = infoCenter.getModuleArchiveExtension()
 
-        val managerProList = moduleArchiveExtension.getProjectConfig().map {
-            it.obtainProject(infoCenter.getTargetProject())
-        }
+        val managerList = infoCenter.getManagerList()
+
         if (dependency !is ProjectDependency) {
             return
         }
 
+        //依赖对应的project
         val dependencyProject = dependency.dependencyProject
+
+        //防止自己引用自己
         if (dependencyProject === replaceProject) {
             return
         }
 
-        val manager = moduleArchiveExtension.getProjectConfig()
-            .findByName(dependencyProject.path)
+
+        val manager = managerList.firstOrNull { it.originData.name == dependencyProject.path }
 
 
-        if (manager != null && manager.enable && managerProList.contains(dependencyProject)) {
+        if (manager != null && manager.originData.enable) {
+            //标记这个对象被引用了
+            manager.flagHasOut = true
+
+//            if (replaceProject != infoCenter.getTargetProject()) {
+//                addDependencyToTarget(manager)
+//            }
+
             ModuleArchiveLogger.logLifecycle("Handle dependency：${replaceProject.name}:${dependency.name}  ")
 
-            val aarFile =
-                ProjectManageHelper.obtainProjectAARFile(infoCenter, manager)
+            if (manager.cacheValid) {
+                //缓存命中
 
+                ModuleArchiveLogger.logLifecycle("${replaceProject.name} 依赖 ${manager.obtainName()} 缓存命中")
 
-
-            //todo 这里暂时以文件存在判断是否缓存成功
-            val propertyInfoHelper = infoCenter.getPropertyInfoHelper()
-
-            if (propertyInfoHelper.currentAarHit(manager)) {
+                //添加依赖路径
+                replaceProject.repositories.flatDir { flatDirectoryArtifactRepository ->
+                    flatDirectoryArtifactRepository.dir(moduleArchiveExtension.storeLibsDir)
+                }
+                //移除原始的project依赖
                 configuration.dependencies.remove(dependency)
+                //添加aar依赖
+                configuration.dependencies.add(manager.obtainAARDependency())
 
-                val aarConfig = infoCenter.getTargetProject().rootProject.files(
-                    aarFile
-                )
-                configuration.dependencies.add(replaceProject.dependencies.create(aarConfig))
+
             } else {
-                //不存在文件构建
-                buildAARGraph(infoCenter, manager)
+                ModuleArchiveLogger.logLifecycle("${replaceProject.name} 依赖 ${manager.obtainName()} 没有命中缓存")
+                //不存在文件进行构建
+                ProjectManageHelper.buildAARGraph(infoCenter, manager)
             }
-
-
         }
+
+        //当前进行替换replaceProject是否在管理的范围
+        val replaceProInManager = managerList.firstOrNull { it.obtainProject() == replaceProject }
+
+        //记录依赖关系
+        if (manager != null && replaceProInManager != null) {
+            replaceProInManager.dependencyManagerList.add(manager)
+        }
+
+        //替换自工程的依赖
         replaceDependency(dependencyProject)
     }
 }

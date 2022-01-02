@@ -21,7 +21,7 @@ import org.modulearchive.IInfoCenter
 object ModuleArchiveAARGraphHelper {
 
     fun buildGraph(config: IInfoCenter) {
-        val toList = config.getModuleArchiveExtension().getProjectConfig().toList()
+        val toList = config.getModuleArchiveExtension().projectConfig.toList()
         println("你好 ---- ${toList}")
     }
 
