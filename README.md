@@ -1,6 +1,6 @@
 # ModuleArchive
 
-一个可以提升Android编译效率的Gradle小插件
+一个可以提升`Android`编译效率的Gradle小插件
 
 在多module工程下，大多数情况我们若干子module是不会变动的
 但是在当前gradle版本偶尔会触发联动编译进而影响编译效率。
