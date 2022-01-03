@@ -66,7 +66,10 @@ moduleArchive {
 # TODO
 
 1.链式依赖存在内联关系
+
 2.变体依赖的传递
+
+3.Java库的支持
 
 # License
 ```
