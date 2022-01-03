@@ -15,9 +15,13 @@
 
 # 使用指南
 在您的app的build.gradle添加如下配置
+> TODO CHANGE PLUGIN ID FOR GRADLE PORTAL 
+
+
+
 ```groovy
 //启用插件
-apply plugin: org.modulearchive.plugin.ModuleArchivePlugin
+apply plugin: CHANGE PLUGIN ID FOR GRADLE PORTAL
 //插件配置
 moduleArchive {
     //可选参数.是否打印log 默认为false
