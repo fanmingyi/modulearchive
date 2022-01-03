@@ -18,6 +18,11 @@
 > TODO CHANGE PLUGIN ID FOR GRADLE PORTAL 
 
 
+# TODO
+
+1.链式依赖存在内联关系
+2.变体依赖的传递
+
 
 ```groovy
 //启用插件
