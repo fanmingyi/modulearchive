@@ -8,7 +8,7 @@ plugins {
 
 
 val artifactId="ModuleArchive"
-val groupName = "org.fmy.modulearchive"
+val groupName = "io.github.fanmingyi.modulearchive"
 val artifactVersion = "1.0.0"
 group = groupName
 version = artifactVersion
