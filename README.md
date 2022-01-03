@@ -1,4 +1,5 @@
 # ModuleArchive
+[![versionImg](https://badgen.net/maven/v/metadata-url/https:/plugins.gradle.org/m2/io/github/fanmingyi/modulearchive/io.github.fanmingyi.modulearchive.gradle.plugin/maven-metadata.xml?label=ModuleArchive)](https://plugins.gradle.org/plugin/io.github.fanmingyi.modulearchive)
 
 一个可以提升`Android`编译效率的Gradle小插件
 
