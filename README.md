@@ -18,10 +18,7 @@
 > TODO CHANGE PLUGIN ID FOR GRADLE PORTAL 
 
 
-# TODO
 
-1.链式依赖存在内联关系
-2.变体依赖的传递
 
 
 ```groovy
@@ -66,6 +63,10 @@ moduleArchive {
 | --------   | 
 |[<img src="https://play-lh.googleusercontent.com/RwuBOgoBX1OmmR5W14AyBDp9pNgnh1eJD2UmJzhVSZOpZYG1xI_y1aihbE4aP3dURwc=s360-rw" alt="TIYA" width="150"/> ](https://play.google.com/store/apps/details?id=com.huanliao.tiya&hl=en_US&gl=US)       |
 
+# TODO
+
+1.链式依赖存在内联关系
+2.变体依赖的传递
 
 # License
 ```
