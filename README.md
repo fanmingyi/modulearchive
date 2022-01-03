@@ -14,16 +14,17 @@
 
 
 # 使用指南
+
+[modulearchive官方仓库地址](https://plugins.gradle.org/plugin/io.github.fanmingyi.modulearchive)
+
 在您的app的build.gradle添加如下配置
-> TODO CHANGE PLUGIN ID FOR GRADLE PORTAL 
-
-
-
 
 
 ```groovy
 //启用插件
-apply plugin: CHANGE PLUGIN ID FOR GRADLE PORTAL
+plugins {
+  id "io.github.fanmingyi.modulearchive" version "1.0.0"
+}
 //插件配置
 moduleArchive {
     //可选参数.是否打印log 默认为false
@@ -56,6 +57,24 @@ moduleArchive {
     }
 }
 ```
+
+旧版本启用
+```groovy
+buildscript {
+  repositories {
+    maven {
+      url "https://plugins.gradle.org/m2/"
+    }
+  }
+  dependencies {
+    classpath "io.github.fanmingyi.modulearchive:modulearchive:1.0.0"
+  }
+}
+//在某个模块开启
+apply plugin: "io.github.fanmingyi.modulearchive"
+```
+
+
 
 # 谁在使用
 
