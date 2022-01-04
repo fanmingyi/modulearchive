@@ -60,10 +60,8 @@ public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
             )
 
         this.moduleArchiveTask = moduleArchiveTask.get()
-        project.tasks.getByName("preBuild").doLast {
-            println()
-        }
-        project.tasks.getByName("preBuild").dependsOn(moduleArchiveTask)
+
+//        project.tasks.getByName("preBuild").dependsOn(moduleArchiveTask)
 
         dependencyReplaceHelper =
             DependencyReplaceHelper(this)
@@ -78,6 +76,7 @@ public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
             if (!moduleArchiveExtension.pluginEnable) {
                 return@projectsEvaluated
             }
+            project.tasks.getByName("assembleTiyaDebug").finalizedBy(this.moduleArchiveTask)
 
             var starTime = System.currentTimeMillis();
             //赋值日志是否启用
@@ -114,6 +113,9 @@ public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
 
             val endTime = System.currentTimeMillis();
             ModuleArchiveLogger.logLifecycle("插件花費的配置時間${endTime - starTime}")
+
+
+
         }
 
 

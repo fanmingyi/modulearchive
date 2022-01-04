@@ -43,6 +43,7 @@ public abstract class ModuleArchiveTask : DefaultTask() {
 
     @TaskAction
     fun perform() {
+
         project.copy { it ->
             it.from(getInputAARList())
             it.into(outPutDirFile)
