@@ -24,7 +24,7 @@
 ```groovy
 //启用插件
 plugins {
-  id "io.github.fanmingyi.modulearchive" version "1.0.0"
+  id "io.github.fanmingyi.modulearchive" version "1.0.9"
 }
 //插件配置
 moduleArchive {
@@ -68,7 +68,7 @@ buildscript {
     }
   }
   dependencies {
-    classpath "io.github.fanmingyi.modulearchive:modulearchive:1.0.0"
+    classpath "io.github.fanmingyi.modulearchive:modulearchive:1.0.9"
   }
 }
 //在某个模块开启
