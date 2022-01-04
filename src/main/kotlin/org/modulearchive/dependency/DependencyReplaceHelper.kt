@@ -22,7 +22,6 @@ import org.gradle.api.artifacts.Dependency
 import org.gradle.api.artifacts.ProjectDependency
 import org.modulearchive.IInfoCenter
 import org.modulearchive.extension.ProjectManageHelper
-import org.modulearchive.extension.ProjectManageWrapper
 import org.modulearchive.log.ModuleArchiveLogger
 
 
@@ -37,7 +36,7 @@ class DependencyReplaceHelper constructor(
 
     }
 
-
+    private val configList = mutableSetOf<String>("api", "runtimeOnly", "implementation")
 
     private fun replaceDependency(replaceProject: Project, parent: Project? = null) {
 
@@ -53,28 +52,51 @@ class DependencyReplaceHelper constructor(
                 handleReplaceDependency(configuration, dependency, replaceProject)
             }
 
+
         }
 
         //把下层的依赖投递到上层
-        if (parent != null && replaceProjectManager != null) {
-            val impl = replaceProject.configurations.getByName("implementation")
-            val implParent = parent.configurations.getByName("implementation")
-            copyDependency(impl,implParent)
-
-
-            val api = replaceProject.configurations.getByName("api")
-            val apiParent = parent.configurations.getByName("api")
-            copyDependency(api,apiParent)
-
-            val runtimeOnly = replaceProject.configurations.getByName("runtimeOnly")
-            val runtimeOnlyParent = parent.configurations.getByName("runtimeOnly")
-            copyDependency(runtimeOnly,runtimeOnlyParent)
+        if (parent != null && replaceProjectManager != null && replaceProjectManager.cacheValid) {
+            //原始类型
+            copyDependencyWithePrefix(replaceProject, parent, "")
+            //Debug 前缀类型
+            copyDependencyWithePrefix(replaceProject, parent, "debug")
+            //release前缀类型
+            copyDependencyWithePrefix(replaceProject, parent, "release")
+            //变体前缀
+            val flavorName = replaceProjectManager.originData.flavorName
+            if (flavorName.isNotBlank()) {
+                //api debugApi tiyaDebugApi
+                copyDependencyWithePrefix(replaceProject, parent, flavorName)
+                copyDependencyWithePrefix(replaceProject, parent, flavorName + "Debug")
+                copyDependencyWithePrefix(replaceProject, parent, flavorName + "Release")
+            }
         }
     }
 
     private fun copyDependency(src: Configuration, dest: Configuration) {
         for (dependency in src.dependencies) {
             dest.dependencies.add(dependency)
+        }
+    }
+
+    private fun copyDependency(replaceProject: Project, parent: Project, configName: String) {
+        val config = replaceProject.configurations.getByName(configName)
+        val parentContain = parent.configurations.names.contains(configName)
+        if (parentContain) {
+            copyDependency(config, parent.configurations.getByName(configName))
+        }
+    }
+
+    private fun copyDependencyWithePrefix(replaceProject: Project, parent: Project, prefix: String) {
+        for (configName in configList) {
+
+            val newConfigName = if (prefix.isNullOrBlank()) {
+                configName
+            } else {
+                prefix + configName.capitalize()
+            }
+            copyDependency(replaceProject, parent, newConfigName)
         }
     }
 
