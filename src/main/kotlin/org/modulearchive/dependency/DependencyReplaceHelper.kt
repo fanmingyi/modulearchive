@@ -33,10 +33,32 @@ class DependencyReplaceHelper constructor(
 
         //替换依赖
         replaceDependency(infoCenter.getTargetProject())
+        val managerList = infoCenter.getManagerList()
+        for (replaceProjectManager in managerList) {
+            if (replaceProjectManager.cacheValid) {
+                val parent = infoCenter.getTargetProject()
+                val replaceProject=replaceProjectManager.obtainProject()
+                //原始类型
+                copyDependencyWithePrefix(replaceProject, parent, "",configList)
+                //Debug 前缀类型
+                copyDependencyWithePrefix(replaceProject, parent, "debug",configList)
+                //release前缀类型
+                copyDependencyWithePrefix(replaceProject, parent, "release",configList)
+                //变体前缀
+                val flavorName = replaceProjectManager.originData.flavorName
+                if (flavorName.isNotBlank()) {
+                    //api debugApi tiyaDebugApi
+                    copyDependencyWithePrefix(replaceProject, parent, flavorName,configList)
+                    copyDependencyWithePrefix(replaceProject, parent, flavorName + "Debug",configList)
+                    copyDependencyWithePrefix(replaceProject, parent, flavorName + "Release",configList)
+                }
+            }
 
+        }
     }
 
     private val configList = mutableSetOf<String>("api", "runtimeOnly", "implementation")
+    private val subConfigList2 = mutableSetOf<String>("api")
 
     private fun replaceDependency(replaceProject: Project, parent: Project? = null) {
 
@@ -88,8 +110,8 @@ class DependencyReplaceHelper constructor(
         }
     }
 
-    private fun copyDependencyWithePrefix(replaceProject: Project, parent: Project, prefix: String) {
-        for (configName in configList) {
+    private fun copyDependencyWithePrefix(replaceProject: Project, parent: Project, prefix: String,list:Set<String> = subConfigList2) {
+        for (configName in list) {
 
             val newConfigName = if (prefix.isNullOrBlank()) {
                 configName

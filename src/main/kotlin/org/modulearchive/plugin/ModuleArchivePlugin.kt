@@ -78,6 +78,8 @@ public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
             if (!moduleArchiveExtension.pluginEnable) {
                 return@projectsEvaluated
             }
+
+            var starTime = System.currentTimeMillis();
             //赋值日志是否启用
             ModuleArchiveLogger.enableLogging = moduleArchiveExtension.logEnable
 
@@ -110,8 +112,9 @@ public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
 
             dependencyReplaceHelper.replaceDependency()
 
+            val endTime = System.currentTimeMillis();
+            ModuleArchiveLogger.logLifecycle("插件花費的配置時間${endTime - starTime}")
         }
-
 
 
     }
