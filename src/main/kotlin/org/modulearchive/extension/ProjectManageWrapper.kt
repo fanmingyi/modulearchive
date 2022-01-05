@@ -96,7 +96,7 @@ open class ProjectManageWrapper(val originData: ProjectManage, private val info:
         if (lastModified <= 0) {
             val aarProject = obtainProject()
             val file = aarProject.fileTree(".").matching { patterns ->
-                patterns.exclude("build", ".gradle")
+                patterns.exclude("build", ".gradle",".cxx")
             }.toList().maxBy {
                 it.lastModified()
             }

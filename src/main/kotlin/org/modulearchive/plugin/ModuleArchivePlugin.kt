@@ -16,6 +16,8 @@
 
 package org.modulearchive.plugin
 
+import com.android.build.gradle.AppPlugin
+import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.tasks.TaskProvider
@@ -29,7 +31,6 @@ import org.modulearchive.log.ModuleArchiveLogger
 import org.modulearchive.task.ModuleArchiveTask
 import java.io.FileReader
 import java.util.*
-import java.util.regex.Matcher
 
 
 public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
@@ -61,7 +62,6 @@ public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
 
         this.moduleArchiveTask = moduleArchiveTask.get()
 
-//        project.tasks.getByName("preBuild").dependsOn(moduleArchiveTask)
 
         dependencyReplaceHelper =
             DependencyReplaceHelper(this)
@@ -76,7 +76,12 @@ public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
             if (!moduleArchiveExtension.pluginEnable) {
                 return@projectsEvaluated
             }
-            project.tasks.getByName("assembleTiyaDebug").finalizedBy(this.moduleArchiveTask)
+
+            val androidExtension = project.extensions.getByName("android") as BaseAppModuleExtension
+
+            androidExtension.applicationVariants.all { variant ->
+                variant.assembleProvider.get().finalizedBy(this.moduleArchiveTask)
+            }
 
             var starTime = System.currentTimeMillis();
             //赋值日志是否启用
@@ -113,7 +118,6 @@ public class ModuleArchivePlugin : Plugin<Project>, IInfoCenter {
 
             val endTime = System.currentTimeMillis();
             ModuleArchiveLogger.logLifecycle("插件花費的配置時間${endTime - starTime}")
-
 
 
         }

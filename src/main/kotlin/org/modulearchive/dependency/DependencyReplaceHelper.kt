@@ -58,7 +58,7 @@ class DependencyReplaceHelper constructor(
     }
 
     private val configList = mutableSetOf<String>("api", "runtimeOnly", "implementation")
-    private val subConfigList2 = mutableSetOf<String>("api")
+    private val apiConfigList = mutableSetOf<String>("api")
 
     private fun replaceDependency(replaceProject: Project, parent: Project? = null) {
 
@@ -73,8 +73,6 @@ class DependencyReplaceHelper constructor(
             for (dependency in mutableSet) {
                 handleReplaceDependency(configuration, dependency, replaceProject)
             }
-
-
         }
 
         //把下层的依赖投递到上层
@@ -110,7 +108,7 @@ class DependencyReplaceHelper constructor(
         }
     }
 
-    private fun copyDependencyWithePrefix(replaceProject: Project, parent: Project, prefix: String,list:Set<String> = subConfigList2) {
+    private fun copyDependencyWithePrefix(replaceProject: Project, parent: Project, prefix: String,list:Set<String> = apiConfigList) {
         for (configName in list) {
 
             val newConfigName = if (prefix.isNullOrBlank()) {
@@ -161,8 +159,7 @@ class DependencyReplaceHelper constructor(
             if (manager.cacheValid) {
                 //缓存命中
 
-                ModuleArchiveLogger.logLifecycle("${replaceProject.name} 依赖 ${manager.obtainName()} 缓存命中")
-
+                ModuleArchiveLogger.logLifecycle("${replaceProject.name} 依赖 ${manager.obtainName()} 缓存命中 ${configuration.state}")
                 //添加依赖路径
                 replaceProject.repositories.flatDir { flatDirectoryArtifactRepository ->
                     flatDirectoryArtifactRepository.dir(moduleArchiveExtension.storeLibsDir)
