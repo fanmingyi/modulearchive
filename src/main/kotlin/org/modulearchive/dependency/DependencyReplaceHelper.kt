@@ -19,11 +19,11 @@ package org.modulearchive.dependency
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.Dependency
+import org.gradle.api.artifacts.ModuleDependency
 import org.gradle.api.artifacts.ProjectDependency
 import org.modulearchive.IInfoCenter
 import org.modulearchive.extension.ProjectManageHelper
 import org.modulearchive.log.ModuleArchiveLogger
-
 
 class DependencyReplaceHelper constructor(
     private val infoCenter: IInfoCenter
@@ -37,34 +37,34 @@ class DependencyReplaceHelper constructor(
         for (replaceProjectManager in managerList) {
             if (replaceProjectManager.cacheValid) {
                 val parent = infoCenter.getTargetProject()
-                val replaceProject=replaceProjectManager.obtainProject()
+                val replaceProject = replaceProjectManager.obtainProject()
                 //原始类型
-                copyDependencyWithePrefix(replaceProject, parent, "",configList)
+                copyDependencyWithePrefix(replaceProject, parent, "", configList)
                 //Debug 前缀类型
-                copyDependencyWithePrefix(replaceProject, parent, "debug",configList)
+                copyDependencyWithePrefix(replaceProject, parent, "debug", configList)
                 //release前缀类型
-                copyDependencyWithePrefix(replaceProject, parent, "release",configList)
+                copyDependencyWithePrefix(replaceProject, parent, "release", configList)
                 //变体前缀
                 val flavorName = replaceProjectManager.originData.flavorName
                 if (flavorName.isNotBlank()) {
                     //api debugApi tiyaDebugApi
-                    copyDependencyWithePrefix(replaceProject, parent, flavorName,configList)
-                    copyDependencyWithePrefix(replaceProject, parent, flavorName + "Debug",configList)
-                    copyDependencyWithePrefix(replaceProject, parent, flavorName + "Release",configList)
+                    copyDependencyWithePrefix(replaceProject, parent, flavorName, configList)
+                    copyDependencyWithePrefix(replaceProject, parent, flavorName + "Debug", configList)
+                    copyDependencyWithePrefix(replaceProject, parent, flavorName + "Release", configList)
                 }
             }
-
         }
     }
 
     private val configList = mutableSetOf<String>("api", "runtimeOnly", "implementation")
-    private val apiConfigList = mutableSetOf<String>("api")
+    private val apiConfigList = mutableSetOf<String>("api", "runtimeOnly", "implementation")
+    // private val apiConfigList = mutableSetOf<String>("api")
+    // private val apiConfigList = mutableSetOf<String>("api")
 
     private fun replaceDependency(replaceProject: Project, parent: Project? = null) {
 
         val managerList = infoCenter.getManagerList()
         val replaceProjectManager = managerList.firstOrNull { it.originData.name == replaceProject.path }
-
 
         //子工程依赖替换完成
         for (configuration in replaceProject.configurations) {
@@ -96,6 +96,23 @@ class DependencyReplaceHelper constructor(
 
     private fun copyDependency(src: Configuration, dest: Configuration) {
         for (dependency in src.dependencies) {
+            if (dependency is ModuleDependency) {
+                val srcExclude = configMatchExclude(src, dependency)
+                val destExclude = configMatchExclude(dest, dependency)
+                //被排除了
+                if (srcExclude || destExclude) {
+                    continue
+                } else {
+                    src.excludeRules.forEach {
+                        dependency.exclude(mapOf("group" to it.group,"module" to it.module))
+                    }
+                    dest.excludeRules.forEach {
+                        dependency.exclude(mapOf("group" to it.group,"module" to it.module))
+                    }
+                    // dependency.excludeRules.addAll(src.excludeRules)
+                    // dependency.excludeRules.addAll(dest.excludeRules)
+                }
+            }
             dest.dependencies.add(dependency)
         }
     }
@@ -108,7 +125,12 @@ class DependencyReplaceHelper constructor(
         }
     }
 
-    private fun copyDependencyWithePrefix(replaceProject: Project, parent: Project, prefix: String,list:Set<String> = apiConfigList) {
+    private fun copyDependencyWithePrefix(
+        replaceProject: Project,
+        parent: Project,
+        prefix: String,
+        list: Set<String> = apiConfigList
+    ) {
         for (configName in list) {
 
             val newConfigName = if (prefix.isNullOrBlank()) {
@@ -116,10 +138,10 @@ class DependencyReplaceHelper constructor(
             } else {
                 prefix + configName.capitalize()
             }
+            // ModuleArchiveLogger.logLifecycle("赋值依赖: ${newConfigName}")
             copyDependency(replaceProject, parent, newConfigName)
         }
     }
-
 
     private fun handleReplaceDependency(
         configuration: Configuration,
@@ -141,7 +163,6 @@ class DependencyReplaceHelper constructor(
         if (dependencyProject === replaceProject) {
             return
         }
-
 
         val manager = managerList.firstOrNull { it.originData.name == dependencyProject.path }
 
@@ -169,8 +190,6 @@ class DependencyReplaceHelper constructor(
                 configuration.dependencies.remove(dependency)
                 //添加aar依赖
                 configuration.dependencies.add(manager.obtainAARDependency())
-
-
             } else {
                 ModuleArchiveLogger.logLifecycle("${replaceProject.name} 依赖 ${manager.obtainName()} 没有命中缓存")
                 //不存在文件进行构建
@@ -188,5 +207,17 @@ class DependencyReplaceHelper constructor(
 
         //替换自工程的依赖
         replaceDependency(dependencyProject, replaceProject)
+    }
+
+    private fun configMatchExclude(configuration: Configuration, dependency: Dependency): Boolean {
+        for (excludeRule in configuration.excludeRules) {
+
+            return if (excludeRule.module.isNullOrBlank()) {
+                dependency.group == excludeRule.group
+            } else {
+                dependency.group == excludeRule.group && dependency.name == excludeRule.module
+            }
+        }
+        return false
     }
 }
